@@ -13,11 +13,12 @@ library(SummarizedExperiment)
 library(ggplot2)
 
 
-
+## read scRNA reference dataset
 WT.data <- readRDS("UT_Winkler_Sketched_AssayOnly_Aging.rds")
 
-#gene_list <- read.table("AUCell/Genelist_Y_vs_A3only.txt", sep = "\t", header = TRUE, quote = "", fill = TRUE, stringsAsFactors = FALSE)
-#genes <- gene_list[[1]]
+## reading DEG genesets
+gene_list <- read.table("AUCell/Genelist_Y_vs_A3only.txt", sep = "\t", header = TRUE, quote = "", fill = TRUE, stringsAsFactors = FALSE)
+genes <- gene_list[[1]]
 #genes<-scan("AUCell/Genelist_Y_vs_A1_A2.txt", character(), quote = "")
 
 
@@ -30,16 +31,14 @@ all_genes <- rownames(WT_counts)
 #genes <- sample(all_genes, size = 1000) ## to create random gene dataset from scRNA dataset 
 
  
- 
-cells_rankings <- AUCell_buildRankings(WT_counts, splitByBlocks=TRUE, plotStats=TRUE)
-
-
-cells_AUC <- AUCell_calcAUC(genes, cells_rankings)
-cells_assignment <- AUCell_exploreThresholds(cells_AUC, plotHist=TRUE, assign=TRUE)
-assigned_cells <- cells_assignment[["geneSet"]]$assignment
+ ## AUCell implementation - 
+ cells_rankings <- AUCell_buildRankings(WT_counts, splitByBlocks=TRUE, plotStats=TRUE)
+ cells_AUC <- AUCell_calcAUC(genes, cells_rankings)
+ cells_assignment <- AUCell_exploreThresholds(cells_AUC, plotHist=TRUE, assign=TRUE)
+ assigned_cells <- cells_assignment[["geneSet"]]$assignment
  #new_cells <- names(which(getAUC(cells_AUC)["geneSet",]>0.06)) ## used for random geneset 
-WT.data$AUCell_mapping <- ifelse(colnames(WT.data) %in% assigned_cells, "mapped", "non_mapped")
+ WT.data$AUCell_mapping <- ifelse(colnames(WT.data) %in% assigned_cells, "mapped", "non_mapped")
 
 
-
+## Visualisation
 plot<-DimPlot(WT.data, reduction = "umap", group.by = "AUCell_mapping", cols = c("red", "grey89"), pt.size = 0.6) + NoLegend() + theme(plot.title = element_blank())
